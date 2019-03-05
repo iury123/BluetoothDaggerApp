@@ -34,6 +34,7 @@ import com.example.iurymiguel.daggerapp.views.fragments.DevicesListFragment;
 
 import javax.inject.Inject;
 
+import dagger.Lazy;
 import dagger.android.support.DaggerAppCompatActivity;
 
 public class MainActivity extends DaggerAppCompatActivity {
@@ -41,7 +42,7 @@ public class MainActivity extends DaggerAppCompatActivity {
     @Inject
     ViewModelFactory mViewModelFactory;
     @Inject
-    TimeoutHandler mTimeoutHandler;
+    Lazy<TimeoutHandler> mTimeoutHandler;
     private SectionsPagerAdapter mSectionsPagerAdapter;
     private ActivityMainBinding mBinding;
     private MainViewModel mMainViewModel;
@@ -173,7 +174,7 @@ public class MainActivity extends DaggerAppCompatActivity {
 
                 Utils.showToast(this, "É necessário habilitar a permissão" +
                         " de localização para o correto funcionamento do app", Toast.LENGTH_LONG);
-                mTimeoutHandler.startTimer(this::requestPermissions, 4000);
+                mTimeoutHandler.get().startTimer(this::requestPermissions, 4000);
             } else {
                 requestPermissions();
             }
