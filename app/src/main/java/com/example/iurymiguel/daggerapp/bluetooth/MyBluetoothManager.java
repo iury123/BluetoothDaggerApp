@@ -1,6 +1,9 @@
 package com.example.iurymiguel.daggerapp.bluetooth;
 
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+
+import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -21,6 +24,11 @@ public class MyBluetoothManager {
             mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         }
         return mBluetoothAdapter;
+    }
+
+
+    public Set<BluetoothDevice> getBondedDevices() {
+        return mBluetoothAdapter.getBondedDevices();
     }
 
 }

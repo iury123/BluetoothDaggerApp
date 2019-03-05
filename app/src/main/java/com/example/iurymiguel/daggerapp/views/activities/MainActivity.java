@@ -1,36 +1,32 @@
 package com.example.iurymiguel.daggerapp.views.activities;
 
+import android.Manifest;
 import android.arch.lifecycle.ViewModelProviders;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.databinding.DataBindingUtil;
+import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
 
-import android.widget.TextView;
+import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.example.iurymiguel.daggerapp.R;
 import com.example.iurymiguel.daggerapp.databinding.ActivityMainBinding;
 import com.example.iurymiguel.daggerapp.factories.ViewModelFactory;
+import com.example.iurymiguel.daggerapp.utils.TimeoutHandler;
 import com.example.iurymiguel.daggerapp.utils.Utils;
 import com.example.iurymiguel.daggerapp.viewModels.MainViewModel;
 import com.example.iurymiguel.daggerapp.views.fragments.DeviceDetailsFragment;
@@ -44,12 +40,15 @@ public class MainActivity extends DaggerAppCompatActivity {
 
     @Inject
     ViewModelFactory mViewModelFactory;
+    @Inject
+    TimeoutHandler mTimeoutHandler;
     private SectionsPagerAdapter mSectionsPagerAdapter;
     private ActivityMainBinding mBinding;
     private MainViewModel mMainViewModel;
     private BluetoothAdapter mBluetoothAdapter;
     private final int REQUEST_ENABLE_BT = 1;
-    private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+    private final int MY_PERMISSIONS_REQUEST_LOCATION = 1;
+    private final BroadcastReceiver mOnBluetoothStateChangeListener = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             int state = intent.getIntExtra("state", -1);
@@ -76,6 +75,17 @@ public class MainActivity extends DaggerAppCompatActivity {
         }
     };
 
+    private final BroadcastReceiver mOnDeviceFoundListener = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (action.equals(BluetoothDevice.ACTION_FOUND)) {
+                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                Log.i("DDD", device.toString());
+            }
+        }
+    };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,8 +108,15 @@ public class MainActivity extends DaggerAppCompatActivity {
         mBinding.tabs.addOnTabSelectedListener(new TabLayout
                 .ViewPagerOnTabSelectedListener(mBinding.viewPager));
 
-        registerReceiver(mBroadcastReceiver, new IntentFilter("onBluetoothStateChanged"));
-        initializeBluetooth();
+        registerBroadcasts();
+        checkIfHasLocationPermission();
+    }
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
     }
 
     @Override
@@ -114,7 +131,7 @@ public class MainActivity extends DaggerAppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(mBroadcastReceiver);
+        unregisterBroadcasts();
     }
 
     private void initializeBluetooth() {
@@ -133,6 +150,60 @@ public class MainActivity extends DaggerAppCompatActivity {
         return (mBluetoothAdapter != null);
     }
 
+
+    private void registerBroadcasts() {
+        registerReceiver(mOnBluetoothStateChangeListener,
+                new IntentFilter("onBluetoothStateChanged"));
+        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        registerReceiver(mOnDeviceFoundListener, filter);
+    }
+
+
+    private void unregisterBroadcasts() {
+        unregisterReceiver(mOnBluetoothStateChangeListener);
+        unregisterReceiver(mOnDeviceFoundListener);
+    }
+
+    private void checkIfHasLocationPermission() {
+        int permissionCheck = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_COARSE_LOCATION);
+        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.ACCESS_COARSE_LOCATION)) {
+
+                Utils.showToast(this, "É necessário habilitar a permissão" +
+                        " de localização para o correto funcionamento do app", Toast.LENGTH_LONG);
+                mTimeoutHandler.startTimer(this::requestPermissions, 4000);
+            } else {
+                requestPermissions();
+            }
+        } else {
+            initializeBluetooth();
+        }
+    }
+
+
+    private void requestPermissions() {
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
+                MY_PERMISSIONS_REQUEST_LOCATION);
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_LOCATION: {
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    initializeBluetooth();
+                }
+                break;
+            }
+        }
+    }
 
     public class SectionsPagerAdapter extends FragmentStatePagerAdapter {
 

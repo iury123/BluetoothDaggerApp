@@ -2,8 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.iurymiguel.daggerapp">
 
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+
 
     <application
         android:name=".application.MyApplication"
@@ -24,7 +26,7 @@
             </intent-filter>
         </activity>
         <receiver
-            android:name=".broadcastReceivers.BluetoothEventListener"
+            android:name=".broadcastReceivers.BluetoothStateListener"
             android:enabled="true">
             <intent-filter>
                 <action android:name="android.bluetooth.adapter.action.STATE_CHANGED"/>
