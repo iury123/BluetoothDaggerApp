@@ -26,7 +26,9 @@ import com.example.iurymiguel.daggerapp.databinding.ActivityMainBinding;
 import com.example.iurymiguel.daggerapp.views.fragments.DeviceDetailsFragment;
 import com.example.iurymiguel.daggerapp.views.fragments.DevicesListFragment;
 
-public class MainActivity extends AppCompatActivity {
+import dagger.android.support.DaggerAppCompatActivity;
+
+public class MainActivity extends DaggerAppCompatActivity {
 
     private SectionsPagerAdapter mSectionsPagerAdapter;
     private ActivityMainBinding mBinding;
