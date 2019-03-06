@@ -45,4 +45,7 @@ dependencies {
     implementation "com.google.dagger:dagger-android-support:$daggerVer"
     annotationProcessor "com.google.dagger:dagger-compiler:$daggerVer"
     annotationProcessor "com.google.dagger:dagger-android-processor:$daggerVer"
+
+    implementation 'android.arch.navigation:navigation-fragment-ktx:1.0.0-alpha01'
+    implementation 'android.arch.navigation:navigation-ui-ktx:1.0.0-alpha01'
 }

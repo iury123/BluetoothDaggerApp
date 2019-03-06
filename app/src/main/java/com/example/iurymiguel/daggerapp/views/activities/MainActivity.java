@@ -43,7 +43,6 @@ public class MainActivity extends DaggerAppCompatActivity {
     ViewModelFactory mViewModelFactory;
     @Inject
     Lazy<TimeoutHandler> mTimeoutHandler;
-    private SectionsPagerAdapter mSectionsPagerAdapter;
     private ActivityMainBinding mBinding;
     private MainViewModel mMainViewModel;
     private BluetoothAdapter mBluetoothAdapter;
@@ -96,18 +95,6 @@ public class MainActivity extends DaggerAppCompatActivity {
 
         mMainViewModel = ViewModelProviders.of(this, mViewModelFactory)
                 .get(MainViewModel.class);
-
-        setSupportActionBar(mBinding.toolbar);
-
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-
-        mBinding.viewPager.setAdapter(mSectionsPagerAdapter);
-
-        mBinding.viewPager.addOnPageChangeListener(new TabLayout
-                .TabLayoutOnPageChangeListener(mBinding.tabs));
-
-        mBinding.tabs.addOnTabSelectedListener(new TabLayout
-                .ViewPagerOnTabSelectedListener(mBinding.viewPager));
 
         registerBroadcasts();
         checkIfHasLocationPermission();
@@ -203,30 +190,6 @@ public class MainActivity extends DaggerAppCompatActivity {
                 }
                 break;
             }
-        }
-    }
-
-    public class SectionsPagerAdapter extends FragmentStatePagerAdapter {
-
-        private final int NUM_OF_FRAGMENTS = 2;
-
-        public SectionsPagerAdapter(FragmentManager fm) {
-            super(fm);
-        }
-
-        @Override
-        public Fragment getItem(int position) {
-            switch (position) {
-                case 0:
-                    return DevicesListFragment.newInstance();
-                default:
-                    return DeviceDetailsFragment.newInstance();
-            }
-        }
-
-        @Override
-        public int getCount() {
-            return NUM_OF_FRAGMENTS;
         }
     }
 }
